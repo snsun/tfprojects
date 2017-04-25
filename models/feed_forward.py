@@ -2,7 +2,7 @@ import tensorflow as tf
 
 class FeedForward(object):
   
-  def __init__(self, n_input, n_output, n_hidden, n_units, active_funcs,output_layer = 'soft_max',optimizer = tf.train.AdamOptimizer()):
+  def __init__(self, n_input, n_output, n_hidden, n_units, active_funcs,output_layer = 'soft_max'):
     '''
     n_input: the dim of input
     n_hidden: the numbers of hidden layers, int
@@ -16,7 +16,6 @@ class FeedForward(object):
     self.active_funcs = active_funcs
     self.output_layer = output_layer
     
-
     if len(self.n_units) == 1:
       for i in range(1, self.n_hidden):
         self.n_units.append(self.n_units[0])
@@ -36,15 +35,25 @@ class FeedForward(object):
         self.h = self.active_funcs(tf.matmul(self.h, self.weights[w_name]) + self.weights[b_name])
       else:
         self.h = tf.matmul(self.h, self.weights[w_name]) + self.weights[b_name]
-    if output_layer == 'soft_max':
+    if output_layer == 'softmax':
       self.output = tf.nn.softmax(self.h)
       self.cost = tf.nn.softmax_cross_entropy_with_logits(labels=self.labels, logits=self.output)
     elif output_layer == 'linear':
       self.cost = 0.5 * tf.reduce_sum(tf.pow(tf.subtract(self.h, self.labels), 2.0))
-    self.optimizer = optimizer.minimize(self.cost)
-    init = tf.global_variables_initializer()
-    self.sess = tf.Session()
-    self.sess.run(init)
+    
+    #learning rate related operations
+    self.lr = tf.Variable(0.001, trainable = False)
+    self.new_lr = tf.placeholder(tf.float32, shape=[], name="new_learning_rate")
+    self.lr_update = tf.assign(self.lr, self.new_lr)
+    self.optimizer = tf.train.AdamOptimizer(self.lr).minimize(self.cost)
+
+    #init = tf.global_variables_initializer()
+    #self.sess = tf.Session()
+    #self.sess.run(init)
+  
+  def new_session(self, sess):
+    self.sess = sess
+    self.sess.run(tf.global_variables_initializer())
 
   def _initialize_weights(self):
     all_weights = dict()
@@ -67,13 +76,26 @@ class FeedForward(object):
 
     return all_weights
         
-  def partial_fit(self, X, Y):
-    cost, opt = self.sess.run((self.cost, self.optimizer), feed_dict = {self.x: X, self.labels: Y})
+  def partial_fit(self, X, Y, training):
+    if training == True:
+      cost, opt = self.sess.run((self.cost, self.optimizer), feed_dict = {self.x: X, self.labels: Y})
+    else:
+      cost = self.sess.run(self.cost, feed_dict={self.x: X, self.labels: Y})
     return cost
-  def get_out_put(self, X):
+  def get_output(self, X):
     return self.sess.run(self.output, feed_dict = {self.x: X});
+  
+  #for linear ouput layer regression task
+  def get_mse(self, X, Y):
+    return self.sess.run(self.cost, feed_dict={self.x: X, self.labels: Y})
+
+  #for softmax classification task
   def eval_accuracy(self, X, Y):
     correct_prediction = tf.equal(tf.argmax(self.output, 1), tf.argmax(self.labels, 1))
     accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
     acc = self.sess.run(accuracy, feed_dict = {self.x:X, self.labels:Y})
     return acc
+
+  def assign_lr(self, lr_value): #update the learning rate
+    lr = self.sess.run(self.lr_update, feed_dict={self.new_lr: lr_value})
+    return lr
