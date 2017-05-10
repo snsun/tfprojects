@@ -1,6 +1,6 @@
 #!/bin/bash
 
-stage=2
+stage=0
 config_dir=config/ # store list 'utt input1.ark:234 output1.ark:122
 output_dir=data/tfrecords
 mkdir $config_dir
@@ -11,7 +11,7 @@ if [ $stage -le 0 ]; then
   tr_targets_scp=data/logspec_enhan_7000/train_label.scp # kaldi targets scp file path
   cv_feats_scp=data/logsepc_enhan_7000/dev_input.scp
   cv_targets_scp=data/logspec_enhan_7000/dev_label.scp
-  apply_cmvn=true
+  apply_cmvn=false
   mode=dev
   inputs_cmvn=data/inputs.cmvn
   labels_cmvn=data/labels.cmvn #if you don't want to use cmvn for labels, please let it ''
@@ -51,7 +51,7 @@ if [ $stage -le 2 ]; then
       best_model_name=`tail -n 1 exp/log.txt | cut -d ' ' -f 1`
       echo $best_model_name > exp/best.mdl
       pre_cv_costs=$cur_cv_costs
-      reject=$reject + 1
+      reject=$[$reject+1]
     else
       learning_rate=$(echo " $learning_rate * $halving_factor  "|bc -l)
     fi
@@ -62,3 +62,8 @@ if [ $stage -le 2 ]; then
 fi
 echo 'Training Done'
 
+if [ $stage -le 3 ]; then
+  load_model=`cat exp/best.mdl`
+  test_list=config/dev_tf.lst
+  python test_dnn_tfrecords.py --load_model=$load_model --test_list=$test_list
+fi

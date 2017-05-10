@@ -4,7 +4,7 @@ import tools.io_funcs.kaldi_io as kio
 from tools.io_funcs import feats_trans
 import random
 import models.feed_forward as ff
-import os, sys
+import os, sys, datetime
 
 '''
 training or cv of nn
@@ -51,19 +51,18 @@ def train(dnn, fscp, tscp, batch_size, l, r, training):
       cost = dnn.partial_fit(feats, targets,training);
       total_costs = total_costs + cost;
       total_frames = total_frames +( e-s)
-    
     feats_randomizer.clear();
     targets_randomizer.clear()
-    if (total_frames) * 10 /1000 % 3600 < 200: 
+    if (total_frames*10/1000)%3600 < 200: 
       print '>>>>costs at the ',float(total_frames) * 10 /1000 / 3600, ' is ',total_costs/total_frames ,'<<<<\n'
   return total_costs/total_frames
  
 
 
-fscp = 'data/logspec_enhan_7000/clean_7000.scp'
-tscp = 'data/logspec_enhan_7000/noise_7000.scp'
-cv_fscp = 'data/logspec_enhan_7000/cv_clean_1000.scp'
-cv_tscp = 'data/logspec_enhan_7000/cv_noise_1000.scp'
+fscp = 'data/logspec_enhan_7000/train_input.scp'
+tscp = 'data/logspec_enhan_7000/train_label.scp'
+cv_fscp = 'data/logspec_enhan_7000/dev_input.scp'
+cv_tscp = 'data/logspec_enhan_7000/dev_label.scp'
 dim = 257
 l = 2 
 r = 2
@@ -71,7 +70,7 @@ batch_size = 256
 pre_cv_costs = float('Inf')
 
 sess = tf.Session()
-dnn = ff.FeedForward(dim*(l+r+1), dim, 4, [256], tf.nn.relu, output_layer = 'linear')
+dnn = ff.FeedForward(dim*(l+r+1), dim, 3, [1024], tf.nn.relu, output_layer = 'linear')
 dnn.new_session(sess)
 
 sess.run(tf.global_variables_initializer())
@@ -81,8 +80,9 @@ lr = sess.run(dnn.lr)
 reject = 0
 
 for iter_num in range(max_iters):
+  stime = datetime.datetime.now()
   cur_tr_costs = train(dnn, fscp,tscp, batch_size, l, r, True);
-  print "Training cost is: ", cur_tr_costs
+  print "Training cost is: ", cur_tr_costs, datetime.datetime.now()-stime
   cur_cv_costs = train(dnn, cv_fscp, cv_tscp, batch_size, l, r, False)
   print "CV cost is: ", cur_cv_costs;
   if cur_cv_costs > pre_cv_costs:

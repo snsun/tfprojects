@@ -40,7 +40,7 @@ class FeedForward(object):
       self.cost = tf.nn.softmax_cross_entropy_with_logits(labels=self.labels, logits=self.output)
     elif output_layer == 'linear':
       self.cost = 0.5 * tf.reduce_sum(tf.pow(tf.subtract(self.h, self.labels), 2.0))
-    
+      self.output = self.h 
     #learning rate related operations
     self.lr = tf.Variable(0.001, trainable = False)
     self.new_lr = tf.placeholder(tf.float32, shape=[], name="new_learning_rate")
