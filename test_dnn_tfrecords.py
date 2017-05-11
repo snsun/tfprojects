@@ -42,7 +42,6 @@ def splice_feats(feats, l, r):
   return tf.concat(sfeats, 1)
 
 def test(sess, coord, dnn, sfeats,file_list,data_dir):
-  kaldi_writer = kio.ArkWriter(data_dir+'/nnet_output.scp')
 
   count = 0
   try:
@@ -53,7 +52,8 @@ def test(sess, coord, dnn, sfeats,file_list,data_dir):
       (_, name) = os.path.split(tffilename)
       (uttid, _) = os.path.splitext(name)
       
-      kaldi_writer.write_next_utt(data_dir+'/nnet_output.ark',
+      kaldi_writer = kio.ArkWriter(data_dir+'/' + uttid + '.scp')
+      kaldi_writer.write_next_utt(data_dir+'/' + uttid + '.ark',
         uttid,
         output)
       count += 1

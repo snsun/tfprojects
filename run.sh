@@ -65,6 +65,7 @@ echo 'Training Done'
 
 if [ $stage -le 3 ]; then
   load_model=`cat exp/best.mdl`
+  data_dir=`pwd`/data/test/
   test_list=config/dev_tf.lst
-  python test_dnn_tfrecords.py --load_model=$load_model --test_list=$test_list
+  python test_dnn_tfrecords.py --load_model=$load_model --test_list=$test_list --data_dir=$data_dir
 fi
