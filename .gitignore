@@ -1,0 +1,5 @@
+*.pyc
+data
+config
+path.sh
+exp
