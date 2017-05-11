@@ -145,8 +145,8 @@ def convert_to(name, apply_cmvn=True, cmvn_for_labels=False):
     pool = multiprocessing.Pool(FLAGS.num_threads)
     workers= []
     for line in config_file:
-        workers.append(pool.apply_async(
-            process_in_each_thread, (line, name, apply_cmvn, cmvn_for_labels)))
+         workers.append(pool.apply_async(
+         process_in_each_thread, (line, name, apply_cmvn, cmvn_for_labels)))
     pool.close()
     pool.join()
 
@@ -205,8 +205,8 @@ if __name__ == '__main__':
     )
     parser.add_argument(
         '--apply_cmvn',
-        type=bool,
-        default=True,
+        type=int,
+        default=1,
         help='Use cmvn of not'
     )
     FLAGS, unparsed = parser.parse_known_args()

@@ -119,13 +119,18 @@ def main(_):
   coord = tf.train.Coordinator()
   train_batch_x, train_batch_y = get_mini_batch(sess, coord, dnn, train_list, l, r, batch_size,num_threads, 1)
   dev_batch_x, dev_batch_y = get_mini_batch(sess, coord, dnn, dev_list, l, r, batch_size,num_threads, 1)
+  
   thread = tf.train.start_queue_runners(sess=sess, coord=coord)
+  
   stime = datetime.datetime.now()
+  
   cur_tr_costs = train(sess,coord, dnn, batch_size, train_batch_x, train_batch_y, num_threads, True,True)
   etime = datetime.datetime.now()
   print 'Training cost: ',cur_tr_costs, etime - stime
+  
   cur_cv_costs = train(sess,coord, dnn, batch_size, dev_batch_x, dev_batch_y, num_threads, False,False)
   print 'CV cost: ', cur_cv_costs,datetime.datetime.now() - stime
+  
   save_path = save_dir + '/train_iter'+str(iter_num)
   if not os.path.exists(save_path):
     os.makedirs(save_path)

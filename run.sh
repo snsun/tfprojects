@@ -1,6 +1,6 @@
 #!/bin/bash
 
-stage=0
+stage=3
 config_dir=config/ # store list 'utt input1.ark:234 output1.ark:122
 output_dir=data/tfrecords
 mkdir $config_dir
@@ -11,18 +11,19 @@ if [ $stage -le 0 ]; then
   tr_targets_scp=data/logspec_enhan_7000/train_label.scp # kaldi targets scp file path
   cv_feats_scp=data/logsepc_enhan_7000/dev_input.scp
   cv_targets_scp=data/logspec_enhan_7000/dev_label.scp
-  apply_cmvn=false
+  apply_cmvn=0
   mode=dev
   inputs_cmvn=data/inputs.cmvn
   labels_cmvn=data/labels.cmvn #if you don't want to use cmvn for labels, please let it ''
   num_threads=20
-  for mode in train dev; do
+  for mode in dev train; do
     ./tools/make_lists.sh $mode data/logspec_enhan_7000/${mode}_input.scp data/logspec_enhan_7000/${mode}_label.scp  #generate the config/$mode.lst
-    python ./tools/io_funcs/convert_to_records_parallel.py --apply_cmvn=$apply_cmvn \
+    python ./tools/io_funcs/convert_to_records_parallel.py \
       --mode=$mode --inputs_cmvn=$inputs_cmvn --labels_cmvn=$labels_cmvn \
-      --num_threds=$num_threads
+      --num_threads=$num_threads --apply_cmvn=$apply_cmvn 
   done
 fi
+
 if [ $stage -le 1 ]; then
   echo "stage=$stage, generate the tfrecord file lists and store them in config/"
   for mode in dev train; do

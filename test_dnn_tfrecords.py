@@ -41,16 +41,20 @@ def splice_feats(feats, l, r):
     sfeats.append(f1)
   return tf.concat(sfeats, 1)
 
-def test(sess, coord, dnn, feats,file_list,data_dir):
+def test(sess, coord, dnn, sfeats,file_list,data_dir):
   kaldi_writer = kio.ArkWriter(data_dir+'/nnet_output.scp')
 
   count = 0
   try:
     while not coord.should_stop():
-      x = sess.run(feats)
+      x = sess.run(sfeats)
       output = dnn.get_output(x)
+      tffilename = file_list[count]
+      (_, name) = os.path.split(tffilename)
+      (uttid, _) = os.path.splitext(name)
+      
       kaldi_writer.write_next_utt(data_dir+'/nnet_output.ark',
-        file_list[count],
+        uttid,
         output)
       count += 1
       if count%500 == 0:
