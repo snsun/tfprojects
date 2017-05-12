@@ -101,15 +101,16 @@ def main(_):
   num_units = FLAGS.num_units
   output_layer = FLAGS.output_layer
   batch_size = FLAGS.batch_size
-  active_func = FLAGS.active_func
+  active_func = tf.nn.relu
   num_threads = FLAGS.num_threads 
   train_list,len_train = process_file_list(FLAGS.train_list)
   dev_list,len_dev = process_file_list(FLAGS.dev_list)
   lr = FLAGS.learning_rate
+  keep_prob = FLAGS.keep_prob
   load_model = FLAGS.load_model 
   sess = tf.Session()
   
-  dnn = ff.FeedForward(input_dim*(l+r+1), output_dim, num_layers, [num_units], tf.nn.relu, output_layer = 'linear')
+  dnn = ff.FeedForward(input_dim*(l+r+1), output_dim, num_layers, [num_units], active_func, output_layer = 'linear',keep_prob=keep_prob)
   dnn.new_session(sess)
   saver = tf.train.Saver()
   if load_model != '':
@@ -232,7 +233,7 @@ if __name__ == "__main__":
     help= 'The output layer type, softmox or linear')
   parser.add_argument(
     '--active_func',
-    default='tf.nn.relu',
+    default=tf.nn.relu,
     type=str,
     help = 'The active function of hidden layers')
   FLAGS,unparsed = parser.parse_known_args()

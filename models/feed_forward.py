@@ -1,14 +1,15 @@
 import tensorflow as tf
-
+import time
 class FeedForward(object):
   
-  def __init__(self, n_input, n_output, n_hidden, n_units, active_funcs,output_layer = 'soft_max'):
+  def __init__(self, n_input, n_output, n_hidden, n_units, active_funcs,output_layer = 'soft_max', keep_prob=1):
     '''
     n_input: the dim of input
     n_hidden: the numbers of hidden layers, int
     n_units: lists, the neural units of every layer. If len(n_nuits) == 1, every layer uses the same numbers of units
     active_funs: tf.nn.relu...
     '''
+    tf.set_random_seed(int(time.time()))
     self.n_input = n_input
     self.n_output = n_output
     self.n_hidden = n_hidden
@@ -31,6 +32,9 @@ class FeedForward(object):
       b_name = 'b_' + str(i);
       if i == 0:
         self.h = self.active_funcs(tf.matmul(self.x, self.weights[w_name]) + self.weights[b_name])  
+        if keep_prob != 1:
+          self.h = tf.nn.dropout(self.h, keep_prob)
+
       elif i > 0 and i < n_hidden:
         self.h = self.active_funcs(tf.matmul(self.h, self.weights[w_name]) + self.weights[b_name])
       else:
