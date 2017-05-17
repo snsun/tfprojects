@@ -35,6 +35,37 @@ def make_sequence_example(inputs, labels=None):
     feature_lists = tf.train.FeatureLists(feature_list=feature_list)
     return tf.train.SequenceExample(feature_lists=feature_lists)
 
+def make_sequence_example_two_labels(inputs, labels1, labels2):
+    """Returns a SequenceExample for the given inputs and labels(optional).
+    Args:
+        inputs: A list of input vectors. Each input vector is a list of floats.
+        labels1: A list of one kind labels
+        labels2: A list of another lablels
+    Returns:
+        A tf.train.SequenceExample containing inputs and labels(optional).
+    """
+    input_features = [
+        tf.train.Feature(float_list=tf.train.FloatList(value=input_))
+        for input_ in inputs]
+    if labels1 is not None and labels1 is not None:
+        label_features1 = [
+            tf.train.Feature(float_list=tf.train.FloatList(value=label))
+            for label in labels1]
+        label_features2 = [
+            tf.train.Feature(float_list=tf.train.FloatList(value=label))
+            for label in labels2]
+        feature_list = {
+            'inputs': tf.train.FeatureList(feature=input_features),
+            'labels1': tf.train.FeatureList(feature=label_features1),
+            'labels2': tf.train.FeatureList(feature=label_features2),
+        }
+    else:
+        feature_list = {
+            'inputs': tf.train.FeatureList(feature=input_features)
+        }
+    feature_lists = tf.train.FeatureLists(feature_list=feature_list)
+    return tf.train.SequenceExample(feature_lists=feature_lists)
+
 
 def get_padded_batch(file_list, batch_size, input_size, output_size,
                      num_enqueuing_threads=4, num_epochs=1, infer=False):
